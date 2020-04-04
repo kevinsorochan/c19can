@@ -1,3 +1,6 @@
+#This is 'throw-away' code that was initially written to plot COVID 19 cases and deaths. 
+#The most recent code is updated in the .rmd file in this project
+
 rm(list = ls())
 
 library(data.table)
