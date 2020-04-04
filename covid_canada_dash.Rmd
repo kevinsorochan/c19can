@@ -11,6 +11,8 @@ Sys.time()
 
 ```
 
+
+
 ```{r setup, include = F}
 #Get libraries
 
@@ -306,5 +308,3 @@ The following dates have NAs in raw data for number of deaths
 print(na_death)
 
 ```
-
-
