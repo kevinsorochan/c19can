@@ -44,7 +44,7 @@ time3 <- gsub(time2, pattern = ":", replacement = "-")
 
 filename_cvd <- paste('covid_data_canada', time3, ".csv", sep = "-")
 
-#write.csv(covid_raw, file= filename_cvd, row.names = F)
+#write.csv(covid_raw, file= paste0('data/', filename_cvd), row.names = F)
 
 #head(covid_raw)
 #str(covid_raw)
