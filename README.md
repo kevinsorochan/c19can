@@ -1,4 +1,3 @@
-# COVID19_CANADA
 Visualization of times series of cases and deaths from COVID19 infections in Canada
 
 WARNING: The code used to process the raw data prior to plotting may lead to display of inaccurate data. The accuracy of the plotted data has not been varified and may contain errors. 
