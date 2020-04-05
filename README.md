@@ -4,7 +4,7 @@ Visualization of times series of cases and deaths from COVID19 infections in Can
 WARNING: The code used to process the raw data prior to plotting may lead to display of inaccurate data. The accuracy of the plotted data has not been varified and may contain errors. 
 
 This code generates plots of timelines and trajectories of COVID19 cases and deaths in Canada.
-The plots and some metadata are displayed in a 'flexdashboard' format. The dashboard is (intended to be) updated daily. 
+The plots and some metadata are displayed in a 'flexdashboard' format. The report (dashboard .html) is intended to be updated daily. 
 
 To render the markdown and generate a new .html file with current date in the file name, run 'render_rmarkdown.R'
 
