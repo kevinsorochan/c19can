@@ -3,4 +3,4 @@
 .RData
 .Ruserdata
 .png
-old_files
+dir_to_ignore/old_files
