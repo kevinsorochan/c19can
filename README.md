@@ -6,5 +6,5 @@ The plots and some metadata are displayed in a 'flexdashboard' format.
 
 To render the markdown and generate a .html file with current date in the file name, run 'render_rmarkdown.R'
 
-The data are freely available from:
+The data are available at:
 https://www.canada.ca/en/public-health/services/diseases/2019-novel-coronavirus-infection.html
