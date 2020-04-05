@@ -5,7 +5,5 @@ WARNING: The code used to process the raw data prior to plotting may lead to dis
 This code generates plots of timelines and trajectories of COVID19 cases and deaths in Canada.
 The plots and some metadata are displayed in a 'flexdashboard' format. The report (dashboard .html) is intended to be updated daily. 
 
-To render the markdown and generate a new .html file with current date in the file name, run 'render_rmarkdown.R'
-
 The data are available at:
 https://www.canada.ca/en/public-health/services/diseases/2019-novel-coronavirus-infection.html
