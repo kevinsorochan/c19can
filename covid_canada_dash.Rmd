@@ -13,7 +13,7 @@ Sys.time()
 
 ```{r}
 
-print('WARNING: Erros in the code used to process the raw data prior to plotting may lead to display of inaccurate data. The accuracy of the plotted data has not been varified.')
+print('WARNING: Errors in the code used to process the raw data prior to plotting may lead to display of inaccurate data. The accuracy of the plotted data has not been varified.')
 
 ```
 
