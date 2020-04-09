@@ -60,7 +60,6 @@ na_casescnf <- covid_raw %>%
   dplyr::filter(., is.na(numconf)) %>%
   dplyr::select(., prname, date, numconf)
 
-
 na_death <- covid_raw %>%
   dplyr::filter(., is.na(numdeaths)) %>%
   dplyr::select(., prname, date, numdeaths)
@@ -82,10 +81,9 @@ nor_can <- c("Yukon",
              "Northwest Territories",
              "Nunavut")
 
-canada_data <- covid_raw %>%
-  dplyr::filter(., prname == "Canada")
-
 covid_1 <- covid_raw %>%
+  dplyr::mutate(., numconf = as.numeric(numconf)) %>%
+  dplyr::mutate(., numdeaths = as.numeric(numdeaths)) %>%
   dplyr::mutate(., Date = as.POSIXct(date, format = "%d-%m-%Y")) %>%
   dplyr::mutate(., day = format(Date, format = '%d')) %>%
   dplyr::mutate(., month = format(Date, format = '%m')) %>%
@@ -96,7 +94,10 @@ covid_1 <- covid_raw %>%
   dplyr::mutate(., region = ifelse(prname %in% west_can, 'West', 'no_region')) %>%
   dplyr::mutate(., region = ifelse(prname %in% east_can, 'East', region)) %>%
   dplyr::mutate(., region = ifelse(prname %in% mar_can, 'Maritimes', region)) %>%
-  dplyr::mutate(., region = ifelse(prname %in% nor_can, 'North', region)) 
+  dplyr::mutate(., region = ifelse(prname %in% nor_can, 'North', region))
+
+canada_data <- covid_1 %>%
+  dplyr::filter(., prname == "Canada")
 
 ```
 
