@@ -278,6 +278,7 @@ p_new_deaths_r <- p_new_deaths +
   facet_wrap(~region)
 
 ```
+
 Column {.tabset .tabset-fade}
 -------------------------------------
 
@@ -294,6 +295,56 @@ print(p_new_cases)
 ```{r, 'fig.width' = 10, 'fig.cap' = 'The grey lines indicate doubling times at 1, 2, and 4 days'}
 
 print(p_new_deaths)
+
+```
+
+Testing
+===
+
+```{r, include = F}
+
+covid_test <- covid_1 %>%
+  dplyr::filter(!(is.na(numtested)))
+
+covid_test_latest <- covid_case_latest
+
+earliest_test_case <- min(covid_test$Date)
+
+#Get gg object - tests
+p_tests <- ggplot() +
+  geom_point(data = covid_test, aes(x = Date, y = numtested, group = prname), alpha = 0.2) +
+  geom_line(data = covid_test, aes(x = Date, y = numtested, colour = prname)) +
+  geom_label_repel(data = covid_test_latest, aes(x = Date, y = numtested, label = prname), size = 2, box.padding = 0.7, alpha = 0.5) +
+  scale_y_continuous(trans = 'log10', limits = c(1, max(covid_case$numtested))) +
+  scale_x_datetime(limits = c(earliest_test_case, latest_date_plus1day)) +
+  ylab('Cumulative number of tests')
+
+#Get gg object - cases/tests
+
+p_case_to_test <- ggplot() +
+  geom_point(data = covid_test, aes(x = Date, y = numconf/numtested, group = prname), alpha = 0.2) +
+  geom_line(data = covid_test, aes(x = Date, y = numconf/numtested, colour = prname)) +
+  geom_label_repel(data = covid_test_latest, aes(x = Date, y = numconf/numtested, label = prname), size = 2, box.padding = 0.7, alpha = 0.5) +
+  #scale_y_continuous(trans = 'log2', limits = c(1, max(covid_case$numconf))) +
+  scale_x_datetime(limits = c(earliest_test_case, latest_date_plus1day)) +
+  ylab('Cumulative number of cases/Cumulative number of tests')
+
+```
+
+Column {.tabset .tabset-fade}
+-------------------------------------
+
+### Number of tests
+```{r, 'fig.width' = 10, 'fig.cap' = '**Note that early data on testing is not available from this source'}
+
+print(p_tests)
+
+```
+
+### Case to test ratio
+```{r, 'fig.width' = 10, 'fig.cap' = '**Note that early data on testing is not available from this source'}
+
+print(p_case_to_test)
 
 ```
 
