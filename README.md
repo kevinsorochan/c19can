@@ -1,4 +1,4 @@
-Visualization of times series of cases and deaths from COVID19 infections in Canada
+Visualization of times series of cases and deaths from COVID19 infections in Canada as well as time series of tests and case:test ratios.
 
 WARNING: The code used to process the raw data prior to plotting may lead to display of inaccurate data. The accuracy of the plotted data has not been varified and may contain errors. 
 
