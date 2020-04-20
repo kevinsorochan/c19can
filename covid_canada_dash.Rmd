@@ -15,6 +15,8 @@ Sys.time()
 
 print('WARNING: Potential errors in the code used to process the raw data prior to plotting may lead to display of inaccurate data. Accuracy of the plotted data has not been varified.')
 
+print('WARNING: The most recent data from this source is sometimes not accurate')
+
 ```
 
 
@@ -58,10 +60,12 @@ write.csv(covid_raw, file= paste0('data/', filename_cvd), row.names = F)
 
 na_casescnf <- covid_raw %>%
   dplyr::filter(., is.na(numconf)) %>%
+  dplyr::filter(., !(prname == "Repatriated travellers")) %>%
   dplyr::select(., prname, date, numconf)
 
 na_death <- covid_raw %>%
   dplyr::filter(., is.na(numdeaths)) %>%
+  dplyr::filter(., !(prname == "Repatriated travellers")) %>%
   dplyr::select(., prname, date, numdeaths)
 
 west_can <- c("British Columbia",
@@ -164,7 +168,7 @@ p_deaths <- ggplot() +
   geom_label_repel(data = covid_death_latest, aes(x = Date, y = numdeaths, label = prname), size = 2, box.padding = 0.7, alpha = 0.5) +
   scale_y_continuous(trans = 'log2', limits = c(1, max(covid_death$numdeaths))) +
   scale_x_datetime(limits = c(earliest_date_death, latest_date_plus1day_death)) +
-  ylab('Cumulative number of cases')
+  ylab('Cumulative number of deaths')
 
 ```
 
@@ -279,10 +283,75 @@ p_new_deaths_r <- p_new_deaths +
 
 ```
 
+```{r}
+
+##Get new cases
+
+pr_names <- unique(covid_cases_cnf$prname) 
+daily_cases_ls <- list()
+daily_deaths_ls <- list()
+
+for(i in pr_names) {
+  
+  cases_daily_tmp <- subset(covid_cases_cnf, prname == i)
+  deaths_daily_tmp <- subset(covid_death, prname == i)
+  
+  diff_cases <- diff(cases_daily_tmp$numconf)
+  diff_deaths <- diff(deaths_daily_tmp$numdeaths)
+  diff_tests <- diff(cases_daily_tmp$numtested)
+  
+  daily_cases_ls[[i]] <- data.frame(cases_daily_tmp, new_cases = c(0, diff_cases), new_tests = c(0, diff_tests))
+  daily_deaths_ls[[i]] <- data.frame(deaths_daily_tmp, new_deaths = c(0, diff_deaths))
+  
+}
+
+daily_cases_df <- do.call(rbind, daily_cases_ls)
+daily_deaths_df <- do.call(rbind, daily_deaths_ls)
+
+daily_case_label <- daily_cases_df %>%
+  dplyr::group_by(., prname) %>%
+  dplyr::summarise(., label_day = max(new_day_case),
+                   label_case = tail(new_cases, n = 1),
+                   label_test = tail(new_tests, n = 1), 
+                   label_Date = tail(Date, n = 1)) %>%
+  dplyr::mutate(., label_day = ifelse(is.na(label_day), -100, label_day)) %>%
+  dplyr::mutate(., label_test = ifelse(label_test == 0, 1, label_test))
+
+daily_death_label <- daily_deaths_df %>%
+  dplyr::group_by(., prname) %>%
+  dplyr::summarise(., label_day = max(new_day_death),
+                   label_death = tail(new_deaths, n = 1)) %>%
+  dplyr::mutate(., label_day = ifelse(is.na(label_day), -100, label_day))
+  
+
+##Plot daily cases
+
+p_daily_cases <- ggplot() +
+  geom_line(data = daily_cases_df, aes(x = new_day_case, new_cases, colour = prname)) +
+  geom_point(data = daily_cases_df, aes(x = new_day_case, y = new_cases, group = prname), alpha = 0.2) +
+  geom_line(data = daily_cases_df, aes(x = new_day_case, y = new_cases, colour = prname)) +
+  geom_label_repel(data = daily_case_label, aes(x = label_day, y = label_case, label = prname), size = 2, box.padding = 0.7, alpha = 0.5) +
+  scale_y_continuous(trans = 'log2', limits = c(1, max(daily_cases_df$new_cases))) +
+  scale_x_continuous(limits = c(-1, max(daily_cases_df$new_day_case))) +
+  xlab(paste('Day since', case_thresh, 'cases', sep = " ")) +
+  ylab('New cases')
+
+p_daily_deaths <- ggplot() +
+  geom_line(data = daily_deaths_df, aes(x = new_day_death, new_deaths, colour = prname)) +
+  geom_point(data = daily_deaths_df, aes(x = new_day_death, y = new_deaths, group = prname), alpha = 0.2) +
+  geom_line(data = daily_deaths_df, aes(x = new_day_death, y = new_deaths, colour = prname)) +
+  geom_label_repel(data = daily_death_label, aes(x = label_day, y = label_death, label = prname), size = 2, box.padding = 0.7, alpha = 0.5) +
+  scale_y_continuous(trans = 'log2', limits = c(1, max(daily_deaths_df$new_deaths))) +
+  scale_x_continuous(limits = c(-1, max(daily_deaths_df$new_day_death))) +
+  xlab(paste('Day since', case_thresh, 'deaths', sep = " ")) +
+  ylab('New deaths')
+
+
+```
 Column {.tabset .tabset-fade}
 -------------------------------------
 
-### Confirmed cases - trajectory
+### Cumulative confirmed cases - trajectory
 
 ```{r, 'fig.width' = 10, 'fig.cap' = 'The grey lines indicate doubling times at 1, 2, and 4 days'}
 
@@ -290,7 +359,15 @@ print(p_new_cases)
 
 ```
 
-### Deaths - trajectory
+### New confirmed cases - trajectory
+
+```{r, 'fig.width' = 10}
+
+print(p_daily_cases)
+
+```
+
+### Cumulative deaths - trajectory
 
 ```{r, 'fig.width' = 10, 'fig.cap' = 'The grey lines indicate doubling times at 1, 2, and 4 days'}
 
@@ -298,8 +375,16 @@ print(p_new_deaths)
 
 ```
 
-Testing
-===
+### New deaths - trajectory
+
+```{r, 'fig.width' = 10}
+
+print(p_daily_deaths)
+
+```
+
+<!-- Testing -->
+<!-- === -->
 
 ```{r, include = F}
 
@@ -319,6 +404,16 @@ p_tests <- ggplot() +
   scale_x_datetime(limits = c(earliest_test_case, latest_date_plus1day)) +
   ylab('Cumulative number of tests')
 
+##Tests - daily
+
+p_test_daily <- ggplot() +
+  geom_point(data = daily_cases_df, aes(x = Date, y = new_tests, group = prname), alpha = 0.2) +
+  geom_line(data = daily_cases_df, aes(x = Date, y = new_tests, colour = prname)) +
+  geom_label_repel(data = data.frame(daily_case_label), aes(x = label_Date, y = label_test, label = prname), size = 2, box.padding = 0.7, alpha = 0.5) +
+  scale_y_continuous(trans = 'log10', limits = c(1, max(covid_case$numconf))) +
+  scale_x_datetime(limits = c(earliest_test_case, latest_date_plus1day)) +
+  ylab('Number of tests')
+
 #Get gg object - cases/tests
 
 p_case_to_test <- ggplot() +
@@ -329,24 +424,52 @@ p_case_to_test <- ggplot() +
   scale_x_datetime(limits = c(earliest_test_case, latest_date_plus1day)) +
   ylab('Cumulative number of cases/Cumulative number of tests')
 
-```
 
-Column {.tabset .tabset-fade}
--------------------------------------
+daily_test_latest <- daily_cases_df
 
-### Number of tests
-```{r, 'fig.width' = 10, 'fig.cap' = '**Note that early data on testing is not available from this source'}
-
-print(p_tests)
-
-```
-
-### Case to test ratio
-```{r, 'fig.width' = 10, 'fig.cap' = '**Note that early data on testing is not available from this source'}
-
-print(p_case_to_test)
+#Get gg object = new cases/new tests
+p_case_to_test_daily <- ggplot() +
+  geom_point(data = daily_cases_df, aes(x = Date, y = new_cases/new_tests, group = prname), alpha = 0.2) +
+  geom_line(data = daily_cases_df, aes(x = Date, y = new_cases/new_tests, colour = prname)) +
+  geom_label_repel(data = data.frame(daily_case_label), aes(x = label_Date, y = label_case/label_test, label = prname), size = 2, box.padding = 0.7, alpha = 0.5) +
+  scale_y_continuous(trans = 'log2', limits = c(1, max(covid_case$numconf))) +
+  scale_x_datetime(limits = c(earliest_test_case, latest_date_plus1day)) +
+  ylab('Number of cases/Number of tests')
 
 ```
+
+<!-- Column {.tabset .tabset-fade} -->
+<!-- ------------------------------------- -->
+
+<!-- ### Number of tests - Cumulative -->
+<!-- ```{r, 'fig.width' = 10, 'fig.cap' = '**Note that early data on testing is not available from this source'} -->
+
+<!-- print(p_tests) -->
+
+<!-- ``` -->
+
+<!-- ###Number of tests - Daily -->
+<!-- ```{r, 'fig.width' = 10, 'fig.cap' = '**Note that early data on testing is not available from this source'} -->
+
+<!-- print(p_test_daily) -->
+
+<!-- ``` -->
+
+
+<!-- ### Case to test ratio - Cumulative -->
+<!-- ```{r, 'fig.width' = 10, 'fig.cap' = '**Note that early data on testing is not available from this source'} -->
+
+<!-- print(p_case_to_test) -->
+
+<!-- ``` -->
+
+<!-- ###Case to test ratio - Daily -->
+
+<!-- ```{r, 'fig.width' = 10, 'fig.cap' = '**Note that early data on testing is not available from this source'} -->
+
+<!-- print(p_case_to_test_daily) -->
+
+<!-- ``` -->
 
 Data warnings
 ===
